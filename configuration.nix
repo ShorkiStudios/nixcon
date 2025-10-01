@@ -66,7 +66,7 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-   fish gh git lazygit element-desktop wget
+   fish gh git lazygit element-desktop wget ghostty vscodium
   ];
 
   services.openssh.enable = true;
