@@ -53,12 +53,20 @@
     ];
   };
 
+    security.sudo.extraRules = [{
+    users = ["shork"];
+    commands = [{
+      command = "ALL";
+      options = ["NOPASSWD"];
+    }];
+  }];
+
   programs.fish.enable = true;  # Move Fish shell configuration here
   programs.firefox.enable = true;
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    nano fish gh git lazygit element-desktop wget
+   fish gh git lazygit element-desktop wget
   ];
 
   services.openssh.enable = true;
