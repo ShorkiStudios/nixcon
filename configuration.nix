@@ -8,7 +8,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.initrd.luks.devices."luks-f1e69465-73c8-4867-bb73-ad3b691f99ac".device = "/dev/disk/by-uuid/f1e69465-73c8-4867-bb73-ad3b691f99ac";
+  #boot.initrd.luks.devices.
   networking.hostName = "ShorkSpace";
   networking.networkmanager.enable = true;
   time.timeZone = "America/Denver";
