@@ -44,9 +44,9 @@
     jack.enable = true;
   };
 
-  users.users.shork = {
+  users.users.user = {
     isNormalUser = true;
-    description = "Shorki";
+    description = "user";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
       kdePackages.kate
@@ -54,7 +54,7 @@
   };
 
     security.sudo.extraRules = [{
-    users = ["shork"];
+    users = ["user"];
     commands = [{
       command = "ALL";
       options = ["NOPASSWD"];
