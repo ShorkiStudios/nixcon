@@ -6,6 +6,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelModules = [ "kvm-intel" ]; # Use "kvm-amd" for AMD CPUs
 
   # Bluetooth
   hardware.bluetooth.enable = true;
@@ -21,6 +22,16 @@
   };
 
   networking.hostName = "nullspace";
+  virtualisation.libvirtd = {
+  enable = true;
+  qemu = {
+    package = pkgs.qemu;
+    runAsRoot = true; # Optional: Set to false for better security
+    swtpm.enable = true; # Enable TPM emulation
+    ovmf.enable = true; # Enable UEFI support
+  };
+};
+
   networking.networkmanager.enable = true;
 
   time.timeZone = "America/Denver";
@@ -108,7 +119,7 @@
   environment.systemPackages = with pkgs; [
     fish gh git lazygit element-desktop wget ghostty vscodium neovim tree
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
-    mullvad-vpn fastfetch
+    mullvad-vpn fastfetch qemu libvirt virt-manager bridge-utils OVMF
     libnotify  # For notifications
     bluez  # For bluetoothctl
     kdePackages.kdialog  # Qt6 version to override deprecated Qt5 alias
