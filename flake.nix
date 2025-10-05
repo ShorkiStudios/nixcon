@@ -1,5 +1,5 @@
 {
-  description = "ShorkSpace NixOS + Home Manager + Nixcord";
+  description = "nullspace NixOS + Home Manager + Nixcord";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -12,7 +12,7 @@
     let
       system = "x86_64-linux";
     in {
-      nixosConfigurations.ShorkSpace = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.nullspace = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           # Global nixpkgs config (allowUnfree if needed for packages/Discord)
@@ -42,7 +42,7 @@
       };
 
       # Optional: Standalone HM for testing
-      homeConfigurations."user@ShorkSpace" = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations."user@nullspace" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;

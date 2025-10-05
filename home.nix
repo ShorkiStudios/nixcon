@@ -10,8 +10,8 @@
 
   programs.git = {
     enable = true;
-    userName = "Your Name";
-    userEmail = "your.email@example.com";
+    userName = "";
+    userEmail = "shorkicalypso@gmail.com";
   };
 
   programs.neovim.enable = true;

@@ -20,7 +20,7 @@
     ];
   };
 
-  networking.hostName = "ShorkSpace";
+  networking.hostName = "nullspace";
   networking.networkmanager.enable = true;
 
   time.timeZone = "America/Denver";
@@ -108,7 +108,7 @@
   environment.systemPackages = with pkgs; [
     fish gh git lazygit element-desktop wget ghostty vscodium neovim tree
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
-    mullvad-vpn
+    mullvad-vpn fastfetch
     libnotify  # For notifications
     bluez  # For bluetoothctl
     kdePackages.kdialog  # Qt6 version to override deprecated Qt5 alias
