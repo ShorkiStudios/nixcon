@@ -6,7 +6,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-intel" ]; # Use "kvm-amd" for AMD CPUs
+  boot.kernelModules = [ "kvm-intel" "cdc_acm" "usbserial" ]; # Added for USB-serial stability (e.g., ESP32)
+
+  # Serial console support (for host NixOS, if needed)
+  boot.kernelParams = [ "console=ttyS0,115200n8" ];  # Serial console output at 115200 baud
 
   # Bluetooth
   hardware.bluetooth.enable = true;
@@ -23,14 +26,14 @@
 
   networking.hostName = "nullspace";
   virtualisation.libvirtd = {
-  enable = true;
-  qemu = {
-    package = pkgs.qemu;
-    runAsRoot = true; # Optional: Set to false for better security
-    swtpm.enable = true; # Enable TPM emulation
-    ovmf.enable = true; # Enable UEFI support
+    enable = true;
+    qemu = {
+      package = pkgs.qemu;
+      runAsRoot = true; # Optional: Set to false for better security
+      swtpm.enable = true; # Enable TPM emulation
+      ovmf.enable = true; # Enable UEFI support
+    };
   };
-};
 
   networking.networkmanager.enable = true;
 
@@ -95,10 +98,19 @@
     Enable = Source,Sink,Control,Media,Socket  # Enables AVRCP (Media/Control) alongside A2DP (Source/Sink)
   '';
 
+  # Enable serial getty for login over serial port
+  systemd.services."serial-getty@ttyS0" = {
+    enable = true;
+    wantedBy = [ "getty.target" ];
+    serviceConfig = {
+      Restart = "always";  # Restart on session close
+    };
+  };
+
   users.users.user = {
     isNormalUser = true;
     description = "user";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" ];
+    extraGroups = [ "networkmanager" "wheel" "libvirtd" "dialout" ];  # dialout for USB serial access
     packages = with pkgs; [
       kdePackages.kate
     ];
@@ -120,9 +132,11 @@
     fish gh git lazygit element-desktop wget ghostty vscodium neovim tree
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
     mullvad-vpn fastfetch qemu libvirt virt-manager bridge-utils OVMF
-    libnotify  # For notifications
-    bluez  # For bluetoothctl
+    libnotify virt-viewer qemu-utils ungoogled-chromium
+    bluez gparted qbittorrent gnome-disk-utility
     kdePackages.kdialog  # Qt6 version to override deprecated Qt5 alias
+    picocom  # For serial communication (e.g., connecting to /dev/ttyUSB0)
+    esptool  # Added for flashing ESP32 devices like T-Deck
     # Gaming setup with Lutris overrides for better compatibility
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
