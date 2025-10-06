@@ -21,6 +21,7 @@
     extraPackages = with pkgs; [
       vaapiIntel
       intel-media-driver  # VA-API/Vulkan Video for Intel Iris Xe
+      vulkan-loader  # For Android emulator Vulkan acceleration
     ];
   };
 
@@ -107,10 +108,22 @@
     };
   };
 
+  # Enable ADB for Android emulator communication
+  programs.adb.enable = true;
+
+  # Accept Android SDK licenses (required for emulator and builds)
+  nixpkgs.config.android_sdk.accept_license = true;
+
+  # Emulator graphics fix and SDK path
+  environment.variables = {
+    QT_QPA_PLATFORM = "xcb";  # Helps with Qt plugin issues in emulators
+    ANDROID_SDK_ROOT = "${pkgs.android-studio}/share/android-sdk";  # For Android Studio
+  };
+
   users.users.user = {
     isNormalUser = true;
     description = "user";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" "dialout" ];  # dialout for USB serial access
+    extraGroups = [ "networkmanager" "wheel" "libvirtd" "dialout" "adbusers" "kvm" ];  # Added adbusers, kvm for Android emulator
     packages = with pkgs; [
       kdePackages.kate
     ];
@@ -133,10 +146,11 @@
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
     mullvad-vpn fastfetch qemu libvirt virt-manager bridge-utils OVMF
     libnotify virt-viewer qemu-utils ungoogled-chromium
-    bluez gparted qbittorrent gnome-disk-utility
+    bluez gparted qbittorrent gnome-disk-utility appimage-run
     kdePackages.kdialog  # Qt6 version to override deprecated Qt5 alias
     picocom  # For serial communication (e.g., connecting to /dev/ttyUSB0)
     esptool  # Added for flashing ESP32 devices like T-Deck
+    android-studio  # Full IDE with Android emulator
     # Gaming setup with Lutris overrides for better compatibility
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
