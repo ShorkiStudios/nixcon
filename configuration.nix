@@ -5,23 +5,28 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-intel" "cdc_acm" "usbserial" ]; # Added for USB-serial stability (e.g., ESP32)
+  boot.kernelPackages = pkgs.linuxPackages_latest;  # Stable kernel in 25.05
+  boot.kernelModules = [ "kvm-intel" "cdc_acm" "usbserial" ];
+  boot.kernelParams = [ "console=ttyS0,115200n8" "i915.enable_psr=0" "i915.fastboot=1" ];
 
-  # Serial console support (for host NixOS, if needed)
-  boot.kernelParams = [ "console=ttyS0,115200n8" ];  # Serial console output at 115200 baud
-
-  # Bluetooth
   hardware.bluetooth.enable = true;
 
-  # Vulkan/OpenGL support (for gaming, Steam, etc.)
   hardware.graphics = {
-    enable = true;  # Replaces deprecated hardware.opengl.enable
-    enable32Bit = true;  # Replaces deprecated hardware.opengl.driSupport32Bit; critical for 32-bit Wine/Proton support
+    enable = true;
+    enable32Bit = true;
     extraPackages = with pkgs; [
       vaapiIntel
-      intel-media-driver  # VA-API/Vulkan Video for Intel Iris Xe
-      vulkan-loader  # For Android emulator Vulkan acceleration
+      intel-media-driver
+      vulkan-loader
+      mesa  # Stable Mesa in 25.05, uses iris for Iris Xe
+      intel-compute-runtime
+      vpl-gpu-rt
+    ];
+    extraPackages32 = with pkgs.pkgsi686Linux; [
+      vaapiIntel
+      intel-media-driver
+      vulkan-loader
+      mesa
     ];
   };
 
@@ -30,9 +35,9 @@
     enable = true;
     qemu = {
       package = pkgs.qemu;
-      runAsRoot = true; # Optional: Set to false for better security
-      swtpm.enable = true; # Enable TPM emulation
-      ovmf.enable = true; # Enable UEFI support
+      runAsRoot = true;
+      swtpm.enable = true;
+      ovmf.enable = true;
     };
   };
 
@@ -71,14 +76,12 @@
     jack.enable = true;
   };
 
-  # Mullvad VPN
   services.mullvad-vpn = {
     enable = true;
-    package = pkgs.mullvad-vpn;  # Ensures CLI/GUI matches daemon version
+    package = pkgs.mullvad-vpn;
   };
 
-  # Full Bluetooth profiles including AVRCP
-  services.blueman.enable = true;  # Optional: Bluetooth manager for easier pairing (adds tray icon)
+  services.blueman.enable = true;
   environment.etc."bluetooth/main.conf".text = lib.mkForce ''
     [General]
     ControllerMode = bredrle
@@ -96,34 +99,33 @@
 
     [Service]
     AutoEnable = true
-    Enable = Source,Sink,Control,Media,Socket  # Enables AVRCP (Media/Control) alongside A2DP (Source/Sink)
+    Enable = Source,Sink,Control,Media,Socket
   '';
 
-  # Enable serial getty for login over serial port
   systemd.services."serial-getty@ttyS0" = {
     enable = true;
     wantedBy = [ "getty.target" ];
     serviceConfig = {
-      Restart = "always";  # Restart on session close
+      Restart = "always";
     };
   };
 
-  # Enable ADB for Android emulator communication
   programs.adb.enable = true;
-
-  # Accept Android SDK licenses (required for emulator and builds)
   nixpkgs.config.android_sdk.accept_license = true;
 
-  # Emulator graphics fix and SDK path
   environment.variables = {
-    QT_QPA_PLATFORM = "xcb";  # Helps with Qt plugin issues in emulators
-    ANDROID_SDK_ROOT = "${pkgs.android-studio}/share/android-sdk";  # For Android Studio
+    QT_QPA_PLATFORM = "xcb";
+    ANDROID_SDK_ROOT = "${pkgs.android-studio}/share/android-sdk";
+    LIBVA_DRIVER_NAME = "iHD";  # Prioritize intel-media-driver for Iris Xe
+    MESA_LOADER_DRIVER_OVERRIDE = "iris";  # Force Iris driver
+    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver-32/share/vulkan/icd.d/intel_icd.i686.json";  # Force Intel Vulkan
+    MESA_NO_LVP = "1";  # Disable llvmpipe
   };
 
   users.users.user = {
     isNormalUser = true;
     description = "user";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" "dialout" "adbusers" "kvm" ];  # Added adbusers, kvm for Android emulator
+    extraGroups = [ "networkmanager" "wheel" "libvirtd" "dialout" "adbusers" "kvm" ];
     packages = with pkgs; [
       kdePackages.kate
     ];
@@ -137,7 +139,6 @@
     }];
   }];
 
-  programs.fish.enable = true;
   programs.firefox.enable = true;
   nixpkgs.config.allowUnfree = true;
 
@@ -146,43 +147,45 @@
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
     mullvad-vpn fastfetch qemu libvirt virt-manager bridge-utils OVMF
     libnotify virt-viewer qemu-utils ungoogled-chromium
-    bluez gparted qbittorrent gnome-disk-utility appimage-run
-    kdePackages.kdialog  # Qt6 version to override deprecated Qt5 alias
-    picocom  # For serial communication (e.g., connecting to /dev/ttyUSB0)
-    esptool  # Added for flashing ESP32 devices like T-Deck
-    android-studio  # Full IDE with Android emulator
-    # Gaming setup with Lutris overrides for better compatibility
+    bluez gparted qbittorrent gnome-disk-utility appimage-run home-manager
+    kdePackages.kdialog
+    picocom
+    esptool
+    android-studio
+    intel-gpu-tools
+    steam-run
+    libva-utils
+    mesa-demos
+    vulkan-tools
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
-        wineWowPackages.stable  # Wine for Windows games (use .wayland if switching to Wayland)
+        wineWowPackages.stable
         vulkan-loader
-        dxvk  # DirectX to Vulkan translation
-        gamescope  # Borderless fullscreen and scaling
+        dxvk
+        gamescope
       ];
       extraLibraries = pkgs: with pkgs; [
-        attr  # Provides libattr.so; fixes mktemp/libattr errors
+        attr
         jansson
-        samba  # Network/auth fixes
+        samba
         zlib
         libpng
         freetype
         fontconfig
       ];
     })
-    protonup-qt  # For managing Proton-GE versions
+    protonup-qt
   ];
 
-  # Steam integration (removes the plain 'steam' from packages; this handles it better)
   programs.steam = {
     enable = true;
-    remotePlay.openFirewall = true;  # For remote play if needed
-    dedicatedServer.openFirewall = true;  # For hosting servers
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
   };
 
-  # Gamemode for performance boosts during gaming
   programs.gamemode.enable = true;
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   services.openssh.enable = true;
-  system.stateVersion = "25.11";
+  system.stateVersion = "25.05";  # Updated to match stable release
 }

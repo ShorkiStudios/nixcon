@@ -1,9 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, nixcord, ... }:
 
 {
   home.username = "user";
   home.homeDirectory = "/home/user";
-  home.stateVersion = "25.11";  # Match system.stateVersion to avoid potential warnings
+  home.stateVersion = "25.05";  # Matches system.stateVersion
 
   programs.fish.enable = true;
   programs.bash.enable = true;
@@ -17,9 +17,8 @@
   programs.neovim.enable = true;
   programs.firefox.enable = true;
 
-  # Python via home.packages (standard HM way—adds to PATH)
   home.packages = with pkgs; [
-    python311  # Or python312 if preferred
+    python311  # Python 3.11 (stable in 25.05)
   ];
 
   home.sessionVariables = {
@@ -27,31 +26,31 @@
     LANG = "en_US.UTF-8";
   };
 
-  # Nixcord config (requires nixcord input passed via flake)
   programs.nixcord = {
-    enable = true;  # Installs Discord + Vencord
-    vesktop.enable = true;  # Optional: Electron-based Discord fork
-    # dorion.enable = true;  # Optional: If you want Dorion (needs initial manual login)
+    enable = true;
+    vesktop.enable = true;
+    # dorion.enable = true;  # Uncomment if you want to try Dorion
 
     config = {
       useQuickCss = true;
       themeLinks = [
-        # "https://raw.githubusercontent.com/some-user/some-theme/main/theme.css"  # Example theme
+        # "https://raw.githubusercontent.com/some-user/some-theme/main/theme.css"
       ];
-      #frameless = true;  # Borderless window
+      # frameless = true;
     };
 
-    # Use extraConfig for unlisted plugins (hideAttachments and ignoreActivities not built-in)
+    # Commenting out extraConfig to avoid potential unsupported plugin errors
+    /*
     extraConfig = {
       hideAttachments = {
         enable = true;
       };
       ignoreActivities = {
-        #enable = true;
-        #ignorePlaying = true;
-        #ignoredActivities = [ "Spotify" ];
+        # enable = true;
+        # ignorePlaying = true;
+        # ignoredActivities = [ "Spotify" ];
       };
-      # Add more unlisted plugins here as needed
     };
+    */
   };
 }
