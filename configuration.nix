@@ -170,8 +170,8 @@
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
     mullvad-vpn fastfetch libvirt virt-manager bridge-utils OVMF
     libnotify virt-viewer qemu-utils ungoogled-chromium
-    bluez gparted qbittorrent gnome-disk-utility appimage-run home-manager
-    kdePackages.kdialog mpv zoom-us
+    bluez gparted qbittorrent gnome-disk-utility appimage-run home-manager blender
+    kdePackages.kdialog mpv zoom-us wine libreoffice-qt6-fresh
     picocom esptool android-studio intel-gpu-tools steam-run
     libva-utils mesa-demos vulkan-tools
     kdePackages.xdg-desktop-portal-kde
