@@ -8,9 +8,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixcord.url = "github:KaylorBen/nixcord/0a5f5936fa40650e3869c705ddbff6e1a72c89db";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";  # Ensures compatibility with your nixpkgs (25.05)
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixcord, ... }:
+  outputs = { self, nixpkgs, home-manager, nixcord, zen-browser, ... }:
     let
       system = "x86_64-linux";
     in {
@@ -21,6 +25,10 @@
             nixpkgs.config.allowUnfree = true;
           }
           ./configuration.nix
+          {
+            # Pass zen-browser to configuration.nix
+            _module.args.zen-browser = zen-browser;
+          }
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;

@@ -1,7 +1,9 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, zen-browser, ... }:  # Added zen-browser to arguments
 
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -39,9 +41,29 @@
       swtpm.enable = true;
       ovmf.enable = true;
     };
+    onBoot = "start";  # Start VMs on boot
+    onShutdown = "suspend";  # Suspend VMs on shutdown
   };
 
+  # Set default libvirt URI and socket permissions
+  environment.etc."libvirt/libvirtd.conf".text = ''
+    unix_sock_group = "libvirtd"
+    unix_sock_rw_perms = "0770"
+    uri_default = "qemu:///system"
+  '';
+
   networking.networkmanager.enable = true;
+
+  # Enable MAC address randomization for Wi-Fi connections
+  environment.etc."NetworkManager/conf.d/10-randomize-mac.conf".text = ''
+    [device]
+    wifi.scan-rand-mac-address=yes
+    [connection]
+    wifi.cloned-mac-address=random
+  '';
+
+  # Open SPICE ports for virt-manager graphical consoles
+  networking.firewall.allowedTCPPorts = [ 5900 5901 ];
 
   time.timeZone = "America/Denver";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -59,6 +81,7 @@
 
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
+  services.displayManager.sddm.wayland.enable = true;  # Enable Wayland for SDDM
   services.desktopManager.plasma6.enable = true;
   services.xserver.xkb = {
     layout = "us";
@@ -87,16 +110,12 @@
     ControllerMode = bredrle
     Experimental = true
     Privacy = device
-
     [Policy]
     AutoEnable = true
-
     [GATT]
     GATTEnable = true
-
     [LE]
     GATTEnableLE = true
-
     [Service]
     AutoEnable = true
     Enable = Source,Sink,Control,Media,Socket
@@ -114,13 +133,14 @@
   nixpkgs.config.android_sdk.accept_license = true;
 
   environment.variables = {
-    QT_QPA_PLATFORM = "xcb";
     ANDROID_SDK_ROOT = "${pkgs.android-studio}/share/android-sdk";
     LIBVA_DRIVER_NAME = "iHD";  # Prioritize intel-media-driver for Iris Xe
     MESA_LOADER_DRIVER_OVERRIDE = "iris";  # Force Iris driver
     VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver-32/share/vulkan/icd.d/intel_icd.i686.json";  # Force Intel Vulkan
     MESA_NO_LVP = "1";  # Disable llvmpipe
   };
+
+  environment.pathsToLink = [ "/share/applications" "/share" ];  # Ensure desktop entries are linked
 
   users.users.user = {
     isNormalUser = true;
@@ -129,7 +149,10 @@
     packages = with pkgs; [
       kdePackages.kate
     ];
+    shell = pkgs.fish;
   };
+
+  programs.fish.enable = true;
 
   security.sudo.extraRules = [{
     users = ["user"];
@@ -145,18 +168,15 @@
   environment.systemPackages = with pkgs; [
     fish gh git lazygit element-desktop wget ghostty vscodium neovim tree
     qemu kdePackages.yakuake ani-cli btop yt-dlp localsend unzip vencord bat
-    mullvad-vpn fastfetch qemu libvirt virt-manager bridge-utils OVMF
+    mullvad-vpn fastfetch libvirt virt-manager bridge-utils OVMF
     libnotify virt-viewer qemu-utils ungoogled-chromium
     bluez gparted qbittorrent gnome-disk-utility appimage-run home-manager
-    kdePackages.kdialog
-    picocom
-    esptool
-    android-studio
-    intel-gpu-tools
-    steam-run
-    libva-utils
-    mesa-demos
-    vulkan-tools
+    kdePackages.kdialog mpv zoom-us
+    picocom esptool android-studio intel-gpu-tools steam-run
+    libva-utils mesa-demos vulkan-tools
+    kdePackages.xdg-desktop-portal-kde
+    spice spice-gtk  # Added for SPICE support
+    libguestfs  # Replaced libguestfs-with-appliances for VM disk inspection
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
         wineWowPackages.stable
@@ -165,16 +185,11 @@
         gamescope
       ];
       extraLibraries = pkgs: with pkgs; [
-        attr
-        jansson
-        samba
-        zlib
-        libpng
-        freetype
-        fontconfig
+        attr jansson samba zlib libpng freetype fontconfig
       ];
     })
     protonup-qt
+    zen-browser.packages.${pkgs.system}.default  # Zen Browser (stable Twilight release)
   ];
 
   programs.steam = {
@@ -187,5 +202,5 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   services.openssh.enable = true;
-  system.stateVersion = "25.05";  # Updated to match stable release
+  system.stateVersion = "25.05";
 }
