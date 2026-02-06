@@ -162,8 +162,15 @@
     }];
   }];
 
+  programs.hyprland = {
+  enable = true;
+  xwayland.enable =true;
+  };
   programs.firefox.enable = true;
   nixpkgs.config.allowUnfree = true;
+
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   environment.systemPackages = with pkgs; [
     fish gh git lazygit element-desktop wget ghostty vscodium neovim tree
@@ -174,9 +181,8 @@
     kdePackages.kdialog mpv zoom-us wine libreoffice-qt6-fresh
     picocom esptool android-studio intel-gpu-tools steam-run
     libva-utils mesa-demos vulkan-tools
-    kdePackages.xdg-desktop-portal-kde
-    spice spice-gtk  # Added for SPICE support
-    libguestfs  # Replaced libguestfs-with-appliances for VM disk inspection
+    kdePackages.xdg-desktop-portal-kde pkgs.waybar pkgs.dunst libnotify swww alacritty kitty rofi-wayland
+    spice spice-gtk   libguestfs
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
         wineWowPackages.stable
