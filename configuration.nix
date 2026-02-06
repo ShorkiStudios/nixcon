@@ -181,7 +181,7 @@
     kdePackages.kdialog mpv zoom-us wine libreoffice-qt6-fresh
     picocom esptool android-studio intel-gpu-tools steam-run
     libva-utils mesa-demos vulkan-tools
-    kdePackages.xdg-desktop-portal-kde pkgs.waybar pkgs.dunst libnotify swww alacritty kitty rofi-wayland pkgs.networkmanagerapplet pkgs.grim pkgs.slupr pkgs.wl-copy
+    kdePackages.xdg-desktop-portal-kde pkgs.waybar pkgs.dunst libnotify swww alacritty kitty rofi-wayland pkgs.networkmanagerapplet pkgs.grim pkgs.wl-clipboard
     spice spice-gtk   libguestfs
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
