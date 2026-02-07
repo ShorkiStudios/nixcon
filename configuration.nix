@@ -162,6 +162,7 @@
     }];
   }];
 
+  programs.niri.enable = true;
   programs.hyprland = {
   enable = true;
   xwayland.enable =true;
@@ -182,7 +183,7 @@
     picocom esptool android-studio intel-gpu-tools steam-run
     libva-utils mesa-demos vulkan-tools
     kdePackages.xdg-desktop-portal-kde pkgs.waybar pkgs.dunst libnotify swww alacritty kitty rofi-wayland pkgs.networkmanagerapplet pkgs.grim pkgs.wl-clipboard
-    spice spice-gtk   libguestfs
+    spice spice-gtk   libguestfs pkgs.rar
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
         wineWowPackages.stable
