@@ -183,7 +183,7 @@
     picocom esptool android-studio intel-gpu-tools steam-run
     libva-utils mesa-demos vulkan-tools
     kdePackages.xdg-desktop-portal-kde pkgs.waybar pkgs.dunst libnotify swww alacritty kitty rofi-wayland pkgs.networkmanagerapplet pkgs.grim pkgs.wl-clipboard
-    spice spice-gtk   libguestfs pkgs.rar
+    spice spice-gtk   libguestfs pkgs.rar protontricks
     (lutris.override {
       extraPkgs = pkgs: with pkgs; [
         wineWowPackages.stable
